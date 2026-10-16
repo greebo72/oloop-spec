@@ -145,4 +145,3 @@ No known approval blockers. Remaining, to be clarified before the respective wor
 - CLI framework (Python, `click` vs. `argparse`), an implementation detail.
 - MCP wrapper: not needed for now (user decision). It would import the same Python module and can be added later if a client without a shell needs it.
 - Windows toolkit is provisional (WPF), see "Desktop clients". macOS follows the iOS project.
-- Git remote for this project (local only vs. backup remote). Not asked; `git init` is enough for the commit references required by CLAUDE.md, a remote can follow later.
