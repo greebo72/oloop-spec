@@ -1,6 +1,6 @@
 """Assemble one upload file for an AI app builder from the spec material.
 
-Usage: python SPEC/build_bundle.py [output]   (default: SPEC/dist/oloop-app-bundle.md)
+Usage: python build_bundle.py [output]   (default: dist/oloop-app-bundle.md)
 
 The bundle holds the client brief, the relevant spec sections, both schemas and every
 fixture file. Nothing is written into the repository except the output file.

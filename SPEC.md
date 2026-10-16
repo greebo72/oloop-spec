@@ -12,6 +12,7 @@
 **Revision:** 2026-10-16 — task fields `createdBy`, `updatedBy`, `labels` added (user request).
 **Revision:** 2026-10-16 — project fields `referencePath`, `referenceHost` added (optional), plus `project find`. Project renamed from "Lagebericht" to "oloop"; all documents translated to English.
 **Revision:** 2026-10-16 — desktop client decision: macOS with SwiftUI (shared with iOS), Windows with WPF (provisional). Replaces the open toolkit question in phase 2.
+**Revision:** 2026-10-16 — spec split into its own repository `oloop-spec` (this one), history of `SPEC/` kept. The CLI moved to `oloop-cli` and uses this repo as a submodule. Paths in this document are relative to this repo.
 **Revision:** 2026-10-16 — schemas moved to `SPEC/schemas/` (single source), `formatVersion` field added, conformance fixtures added in `SPEC/fixtures/`. Prepares a later split into an `oloop-spec` repo.
 **Revision:** 2026-10-16 — spec approved by the user. MCP wrapper not needed for now.
 
@@ -97,9 +98,9 @@ comments:
     createdAt: 2026-10-16T12:05:00Z
 ```
 
-Markdown body = `description`. **Authoritative for the exact structure:** `SPEC/schemas/project.schema.json` and `SPEC/schemas/task.schema.json` (JSON Schema, taking over the role `api-contract.yaml` had before; the schema files win on conflict). The Python package carries a copy so the wheel is self-contained; `Implementation/sync_schemas.py` refreshes it and a test fails if it drifts.
+Markdown body = `description`. **Authoritative for the exact structure:** `schemas/project.schema.json` and `schemas/task.schema.json` (in this repo) (JSON Schema, taking over the role `api-contract.yaml` had before; the schema files win on conflict). The Python CLI (`oloop-cli`) includes this repo as a Git submodule, carries a copy of the schemas so its wheel is self-contained, and a test fails if the copy drifts.
 
-**Conformance fixtures:** `SPEC/fixtures/` holds shared test data (valid data roots with the expected result, invalid ones with the expected error). Every implementation should pass them. See `SPEC/fixtures/README.md`.
+**Conformance fixtures:** `fixtures/` holds shared test data (valid data roots with the expected result, invalid ones with the expected error). Every implementation should pass them. See `fixtures/README.md`.
 
 **`formatVersion`:** integer in the frontmatter of every file, currently `1`. Writers always set it. Readers treat a missing value as 1 and must refuse a value higher than the one they know, so an old client never rewrites data it does not understand. It increases only for changes an old reader cannot handle; adding an optional field does not.
 
@@ -130,7 +131,7 @@ Markdown body = `description`. **Authoritative for the exact structure:** `SPEC/
 - **Rejected:** Electron (bundles Chromium, contradicts "small and fast"); Tauri/Wails (web UI does not blend into the native look); Avalonia (draws its own controls); calling the Python CLI as a sidecar (needs Python or a bundled runtime on every machine, fragile); relying on OS features alone (Spotlight, Quick Look, widgets cannot provide editing, grouping and validated writes).
 - **Obsidian as a stopgap view** over the data root can show lists and grouping, but it edits files by hand without validation or `updatedAt`, which breaks the non-goal "no direct editing". Fine as a short experiment, not as a client.
 
-**Each client re-implements the file format** (no shared code between Swift, C# and Python). All of them must pass `SPEC/fixtures/`, which is the common yardstick. `SPEC/app-brief.md` is the platform-neutral brief for building a client.
+**Each client re-implements the file format** (no shared code between Swift, C# and Python). All of them must pass `fixtures/`, which is the common yardstick. `app-brief.md` is the platform-neutral brief for building a client.
 
 **Look and structure:** project list, task list with the project name in a header, grouping by creation date, modification date, type or status, and an editable task detail, as in the app brief. "Silent since" (follows from `updatedAt`) is a first-class view. Optional later additions that sit on top of a finished app: a menu-bar/tray item with a global shortcut for quick capture, widgets or jump lists.
 
