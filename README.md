@@ -25,3 +25,7 @@ This repo is the contract between all oloop clients. It has no code to run apart
 1. Change `schemas/`, `fixtures/` and `SPEC.md` together in one commit.
 2. Raise `formatVersion` only for changes an old reader cannot handle. Adding an optional field does not.
 3. In each client, update the submodule or copy and run its conformance tests.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE).
