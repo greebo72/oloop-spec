@@ -16,8 +16,9 @@ This repo is the contract between all oloop clients. It has no code to run apart
 
 ## Components
 
-- [oloop-cli](https://github.com/greebo72/oloop-cli): Python CLI and reference implementation. Includes this repo as a submodule.
-- [oloop-ios](https://github.com/greebo72/oloop-ios): iOS and iPadOS client. macOS follows in the same project.
+- [oloop-cli](https://github.com/greebo72/oloop-cli): Python CLI and reference implementation. Released (v0.1.0), runs on macOS, Linux and Windows. Includes this repo as a submodule.
+- [oloop-android](https://github.com/greebo72/oloop-android): Native Kotlin/Compose client for Android. Reads and writes the same files, runs the conformance fixtures as unit tests. See its README for status.
+- [oloop-ios](https://github.com/greebo72/oloop-ios): Repo with the build brief only (`oloop-app-bundle.md`); the app has not been started. macOS is expected to follow in the same project.
 - Windows client: planned (WPF, provisional).
 
 ## Changing the format
