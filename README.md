@@ -1,4 +1,8 @@
-# oloop-spec
+<p align="center">
+  <img src="assets/logo.png" alt="oloop logo" width="160" />
+</p>
+
+<h1 align="center">oloop-spec</h1>
 
 Specification of [oloop](https://github.com/greebo72/oloop-cli), a local cross-project tracker for todos, questions, decisions, features and bugs. The data lives as Markdown files with YAML frontmatter in a plain folder, so every client reads and writes the same files.
 
