@@ -6,13 +6,12 @@ This repo is the contract between all oloop clients. It has no code to run apart
 
 | Path | Content |
 |---|---|
-| `SPEC.md` | Purpose, non-goals, decisions, file format, client plan |
+| `SPEC.md` | Purpose, non-goals, file format, native clients, open points |
 | `schemas/` | JSON Schemas for `project.md` and task files. Authoritative for the structure |
 | `fixtures/` | Valid and invalid sample data with expected results. Every client must pass them |
 | `app-brief.md` | Platform-neutral brief for building a client app |
 | `build_bundle.py` | Assembles brief, spec excerpts, schemas and fixtures into one upload file (`dist/oloop-app-bundle.md`) |
 | `PLAN.md` | Work packages across all components |
-| `api-contract.yaml` | Obsolete HTTP contract, kept as history (German) |
 
 ## Components
 
