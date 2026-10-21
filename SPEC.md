@@ -65,6 +65,12 @@ Markdown body = `description`. **Authoritative for the exact structure:** `schem
 
 **Relative `imagePath`:** images are plain files next to the task, not embedded data.
 
+**Task image (add, replace, remove):** a task has at most one image, stored as `images/<task-id>.<ext>` in the project folder. `<ext>` is the lowercase extension of the chosen source file and one of `png`, `jpg`, `jpeg`, `gif`, `webp`; a client refuses other files with a clear message. The source file stays untouched, the client works on a copy.
+- *Add / replace:* copy the file to a temporary file, then replace the target. After that write the task with `imagePath` set, and update `updatedAt` and `updatedBy`. If writing the task fails, remove the new image file again unless it replaced an existing one. If a replacement has a different extension than the old image, the old file is removed once the task is written, so no orphan stays behind.
+- *Remove:* write the task with `imagePath: null` and update `updatedAt` and `updatedBy`, then delete the image file. If deleting the file fails, the link stays removed and the client reports the error.
+- Image files are not backed up to `.backup/`, only task and project files are.
+- Readers ignore files in `images/` that no `imagePath` points to. An `imagePath` whose file is missing is not an error: the client shows that the image is missing.
+
 **`createdBy`/`updatedBy`/`labels`:** the actor is a free-text string (source: parameter, else `$OLOOP_ACTOR`, else OS user name). `updatedBy` is set together with `updatedAt` on every change, `createdBy` never. `labels` is a list of unique strings, replaceable via edit.
 
 **`dueDate` (task, optional):** the calendar date by which a task should be done, written as `YYYY-MM-DD`. It is a plain date, not a timestamp: no time and no time zone, so it means the same day on every machine. Absent and `null` both mean "no due date". Writers omit the field when there is none. It does not depend on `status`, so a closed task keeps its `dueDate`. Setting, changing or clearing it counts as an edit: `updatedAt` and `updatedBy` are updated. Unlike all other timestamps it is not UTC, see the exception in "Timestamps".
@@ -75,7 +81,7 @@ Markdown body = `description`. **Authoritative for the exact structure:** `schem
 
 **`updatedAt` is a required field, not an extra:** the tool's central purpose is to see what happened last after one or two quiet weeks. CLI and clients filter and sort by it.
 
-**No delete, anywhere.** "Mark as finished instead of delete is the way." Task, comment and project are append-only. `close`/`reopen` (a status flip in the frontmatter) is the only completion mechanism, and no file ever disappears.
+**No delete, anywhere.** "Mark as finished instead of delete is the way." Task, comment and project are append-only. `close`/`reopen` (a status flip in the frontmatter) is the only completion mechanism, and no task, comment or project file ever disappears. The one exception is the image of a task: it can be removed or replaced, see "Task image".
 
 **Edit allowed, but limited.** `title`/`description`/`dueDate` of a task can be corrected afterwards (overwrites the frontmatter field or the Markdown body, `updatedAt` is updated, the file name stays stable). Project name and task type are NOT editable in V1.
 

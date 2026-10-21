@@ -34,7 +34,7 @@
     },
     "imagePath": {
       "type": ["string", "null"],
-      "description": "Relative to the project folder, e.g. 'images/<task-id>.png'. Null until an image is set."
+      "description": "Relative to the project folder, e.g. 'images/<task-id>.png'. Null until an image is set, and null again after it is removed. Extension is one of png, jpg, jpeg, gif, webp (see SPEC.md, Task image)."
     },
     "dueDate": {
       "type": ["string", "null"],

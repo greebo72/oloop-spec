@@ -12,10 +12,10 @@ Everything below is platform neutral except the section "Platform notes".
 2. **Project list:** every direct subfolder of the root that contains a `project.md` is a project. Show the project name, the number of open tasks and the most recent `updatedAt` across its tasks.
 3. **Task list:** selecting a project opens its tasks. The project name is shown in a header. Closed tasks are hidden by default, with a switch to show them.
 4. **Grouping:** the user can group the task list by one of: none, creation date, modification date, task type, task status. See "Grouping and sorting".
-5. **Task detail:** selecting a task shows all of it: type, title, status, labels, description (rendered Markdown), comments, `createdAt`/`createdBy`, `updatedAt`/`updatedBy`, and the image if `imagePath` is set. Title, description and labels are editable in place. The user can close or reopen the task and add a comment.
+5. **Task detail:** selecting a task shows all of it: type, title, status, labels, description (rendered Markdown), comments, `createdAt`/`createdBy`, `updatedAt`/`updatedBy`, and the image if `imagePath` is set. Title, description and labels are editable in place. The user can add, replace or remove the image (see "Task image" in `SPEC.md`). The user can close or reopen the task and add a comment.
 6. **New task:** create a task in the current project (type, title, optional description and labels).
 
-Out of scope for this version: creating or renaming projects, deleting anything, editing task type, image capture, search, notifications, any sync logic of its own. Do not invent features beyond this list.
+Out of scope for this version: creating or renaming projects, deleting anything except the image of a task, editing task type, taking photos with a camera, search, notifications, any sync logic of its own. Do not invent features beyond this list.
 
 ## Data contract
 
@@ -39,9 +39,10 @@ Rules that the schemas cannot express:
 
 - **Create task:** new UUID4 as `id` and file name, `status: open`, `imagePath: null`, `createdAt` = `updatedAt` = now (UTC), `createdBy` = `updatedBy` = the actor (see below), labels trimmed, empty ones dropped, duplicates removed.
 - **Edit** (title, description, labels): set `updatedAt` = now and `updatedBy` = the actor. Never change `id`, `createdAt`, `createdBy` or the file name, even when the title changes.
-- **Close / reopen:** flip `status` between `open` and `closed`, set `updatedAt` and `updatedBy`. Closing is the only way to finish a task. **There is no delete anywhere.**
+- **Close / reopen:** flip `status` between `open` and `closed`, set `updatedAt` and `updatedBy`. Closing is the only way to finish a task. **There is no delete anywhere, except the image of a task.**
 - **Comment:** append `{body, createdAt}` to `comments` and set `updatedAt` and `updatedBy`. Comments cannot be edited or removed.
 - **Actor:** the user's name, entered in the settings and stored on the device. It is written to `createdBy` and `updatedBy`. It is free text. Until it is set, the app asks for it before the first write and does not write anything without it.
+- **Image (add / replace / remove):** the user picks an image file (`png`, `jpg`, `jpeg`, `gif`, `webp`, anything else is refused with a message). Copy it to `<project>/images/<task-id>.<ext>` (lowercase extension), then write the task with `imagePath` set and update `updatedAt` and `updatedBy`. Replacing removes the old file if its extension differs. Removing writes `imagePath: null` first, then deletes the file, and asks for confirmation before. Never delete anything else.
 - **Closed status labels** (display only, the data stays `open`/`closed`): todo → "Done", question → "Answered", decision → "Decided", feature → "Implemented", bug → "Fixed".
 - **Writing:** write to a temporary file and then replace the target, so a crash never leaves a half-written file. If the platform makes that impossible, say so and write as safely as it allows. Before overwriting an existing file, copy it to `<project>/.backup/<file name>.bak` (one generation).
 - **Unknown fields:** frontmatter fields the app does not know are kept. When the app rewrites a file, it writes them back unchanged. Add a round-trip test (read a fixture, write it, read it again) that covers `dueDate` and the unknown field of `valid/unknown-fields`.
