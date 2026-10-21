@@ -44,6 +44,7 @@ Rules that the schemas cannot express:
 - **Actor:** the user's name, entered in the settings and stored on the device. It is written to `createdBy` and `updatedBy`. It is free text. Until it is set, the app asks for it before the first write and does not write anything without it.
 - **Closed status labels** (display only, the data stays `open`/`closed`): todo → "Done", question → "Answered", decision → "Decided", feature → "Implemented", bug → "Fixed".
 - **Writing:** write to a temporary file and then replace the target, so a crash never leaves a half-written file. If the platform makes that impossible, say so and write as safely as it allows. Before overwriting an existing file, copy it to `<project>/.backup/<file name>.bak` (one generation).
+- **Unknown fields:** frontmatter fields the app does not know are kept. When the app rewrites a file, it writes them back unchanged. Add a round-trip test (read a fixture, write it, read it again) that covers `dueDate` and the unknown field of `valid/unknown-fields`.
 - **Concurrent changes:** there is no locking, last writer wins. Before every write, re-read the file. If its `updatedAt` differs from what the app loaded, do not overwrite silently. Show the conflict and let the user choose to reload or overwrite.
 
 ## Grouping and sorting

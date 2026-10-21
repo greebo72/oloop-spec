@@ -44,6 +44,7 @@ type: todo|question|decision|feature|bug
 title: "..."
 status: open|closed
 imagePath: null | "images/<task-id>.<ext>"
+dueDate: 2026-11-01                  # optional, may be absent or null
 createdAt: 2026-10-16T12:00:00Z
 createdBy: user
 updatedAt: 2026-10-16T12:00:00Z
@@ -56,13 +57,17 @@ comments:
 
 Markdown body = `description`. **Authoritative for the exact structure:** `schemas/project.schema.json` and `schemas/task.schema.json` (in this repo); the schema files win on conflict. The Python CLI (`oloop-cli`) includes this repo as a Git submodule, carries a copy of the schemas so its wheel is self-contained, and a test fails if the copy drifts.
 
-**Conformance fixtures:** `fixtures/` holds shared test data (valid data roots with the expected result, invalid ones with the expected error). Every implementation must pass them. See `fixtures/README.md`.
+**Conformance fixtures:** `fixtures/` holds shared test data (valid data roots with the expected result, invalid ones with the expected error). Every implementation must pass them. Every implementation also needs a round-trip test: read a valid fixture, write it back, read it again, and get the same result, including `dueDate` and unknown fields (`valid/due-date`, `valid/unknown-fields`). See `fixtures/README.md`.
 
 **`formatVersion`:** integer in the frontmatter of every file, currently `1`. Writers always set it. Readers treat a missing value as 1 and must refuse a value higher than the one they know, so an old client never rewrites data it does not understand. It increases only for changes an old reader cannot handle; adding an optional field does not.
+
+**Unknown fields:** readers accept frontmatter fields they do not know (in project and task files and in comment entries) and must not drop them. When a client rewrites a file, it writes the unknown fields back unchanged, so an older client never erases a field a newer one added. They are not validated and do not count as an error. This is what lets optional fields such as `dueDate` be added without a `formatVersion` bump.
 
 **Relative `imagePath`:** images are plain files next to the task, not embedded data.
 
 **`createdBy`/`updatedBy`/`labels`:** the actor is a free-text string (source: parameter, else `$OLOOP_ACTOR`, else OS user name). `updatedBy` is set together with `updatedAt` on every change, `createdBy` never. `labels` is a list of unique strings, replaceable via edit.
+
+**`dueDate` (task, optional):** the calendar date by which a task should be done, written as `YYYY-MM-DD`. It is a plain date, not a timestamp: no time and no time zone, so it means the same day on every machine. Absent and `null` both mean "no due date". Writers omit the field when there is none. It does not depend on `status`, so a closed task keeps its `dueDate`. Setting, changing or clearing it counts as an edit: `updatedAt` and `updatedBy` are updated. Unlike all other timestamps it is not UTC, see the exception in "Timestamps".
 
 **`referencePath`/`referenceHost` (project, optional):** working directory (for example a repo) a project belongs to, and the machine name it applies to. `oloop project find` maps a directory to a project (longest matching path wins, host must match). If a path is given without a host, the current machine name is stored.
 
@@ -72,11 +77,11 @@ Markdown body = `description`. **Authoritative for the exact structure:** `schem
 
 **No delete, anywhere.** "Mark as finished instead of delete is the way." Task, comment and project are append-only. `close`/`reopen` (a status flip in the frontmatter) is the only completion mechanism, and no file ever disappears.
 
-**Edit allowed, but limited.** `title`/`description` of a task can be corrected afterwards (overwrites the frontmatter field or the Markdown body, `updatedAt` is updated, the file name stays stable). Project name and task type are NOT editable in V1.
+**Edit allowed, but limited.** `title`/`description`/`dueDate` of a task can be corrected afterwards (overwrites the frontmatter field or the Markdown body, `updatedAt` is updated, the file name stays stable). Project name and task type are NOT editable in V1.
 
 **ID scheme:** UUID4 per entity (no auto-increment without a DB). File name = ID.
 
-**Timestamps:** UTC, ISO 8601 with `Z`. Localization happens on the display side (CLI/UI), not in the file format. Relevant for the stale-days filter in the CLI.
+**Timestamps:** UTC, ISO 8601 with `Z`. Localization happens on the display side (CLI/UI), not in the file format. The one exception is `dueDate`, a plain `YYYY-MM-DD` calendar date without time zone. Relevant for the stale-days filter in the CLI.
 
 **Concurrent writes:** there is no locking, last writer wins. Atomic writing (temp file + replace) prevents half-written files; a real race between two simultaneous writes to the same task is an accepted residual risk for a single-user tool. Clients re-read before writing and surface a changed `updatedAt` as a conflict instead of overwriting silently.
 

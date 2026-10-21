@@ -11,6 +11,11 @@ An implementation conforms if it produces the expected results below.
   holds a substring of the error message. Matching on the exact wording is not required, but
   an implementation must fail for the same reason.
 
+Unknown frontmatter fields are valid and appear in `expected.json` like any other field
+(`valid/unknown-fields`). A client that rewrites such a file must keep them. Every implementation
+needs a round-trip test on `valid/unknown-fields` and `valid/due-date`: read, write, read again,
+and the result equals `expected.json`.
+
 The schemas in `../schemas/` are the authority for structure. These fixtures add the rules a
 schema cannot express: the file name must equal the task `id`, and files with a newer
 `formatVersion` must be refused.
