@@ -24,6 +24,7 @@
       "createdBy": "alice",
       "updatedAt": "2026-01-08T09:00:00Z",
       "updatedBy": "alice",
+      "comments": [],
       "description": "The field priority is unknown to this reader and must survive a rewrite.",
       "projectName": "Example Project"
     }

@@ -6,7 +6,8 @@ An implementation conforms if it produces the expected results below.
 - `valid/<case>/root/` is a data root. `valid/<case>/expected.json` holds the projects and tasks
   a reader must produce from it (`projects` and `tasks`, tasks sorted by `id`). Keys are the
   frontmatter fields plus `description` (Markdown body), and `projectName` on tasks. A missing
-  `formatVersion` is read as 1.
+  `formatVersion` is read as 1. A task without `comments` has `"comments": []`. A task without a
+  due date, with `dueDate` absent or `null` in the file, has no `dueDate` key in `expected.json`.
 - `invalid/<case>/root/` is a data root a reader must refuse. `invalid/<case>/expected_error.txt`
   holds a substring of the error message. Matching on the exact wording is not required, but
   an implementation must fail for the same reason.
