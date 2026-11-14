@@ -175,6 +175,15 @@ PUT /v1/keys             { bundle }
                          → { keyRev }
 ```
 
+The server cannot judge the encryption of a bundle; it checks the form and refuses a bundle that is wrong with `400`:
+
+- `v` is 1 and `kdf` is `"argon2id"`; no other field is accepted.
+- `salt` is 16 bytes and `publicKey` 32 bytes. `wrappedSecretKey` and `recoveryWrappedSecretKey` are envelopes of 74 bytes (header, nonce, the 32 byte secret key and the tag) with `v` 1 and `alg` 1.
+- Binary values are base64url without padding, in the shortest form.
+- `m` is at least 19 MiB and `t` at least 2 (the minimum a client accepts), and both are at most 2^32 − 1, what libsodium takes.
+
+Exactly one of `If-None-Match: *` and `If-Match` is required, otherwise `400`. A failed precondition is `409 conflict`; an `If-Match` for a bundle that does not exist is `404`. An update must keep `publicKey`: the key pair is the identity of the user, and other principals hold keys sealed to it. Only the encryption of the secret key may change, as in a change of the passphrase. `keyRev` starts at 1 and is also sent as `ETag`.
+
 **Agents:** the endpoints for creating, renewing and revoking agents are in `AGENTS.md`.
 
 **Projects and members**

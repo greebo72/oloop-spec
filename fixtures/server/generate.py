@@ -175,11 +175,13 @@ def build():
         "wrappedSecretKeyHex": hx(wrapped_sk),
         "recoveryWrappedSecretKeyHex": hx(recovery_wrapped),
         "aadHex": hx(key_aad(user_id)),
+        # Exactly the JSON the API carries (SERVER.md, "Key bundle"): binary values are
+        # base64url without padding.
         "bundle": {
-            "v": 1, "kdf": "argon2id", "saltB64": b64(salt), "m": 64 * MIB, "t": 3,
-            "publicKeyB64": b64(user_pk),
-            "wrappedSecretKeyB64": b64(wrapped_sk),
-            "recoveryWrappedSecretKeyB64": b64(recovery_wrapped),
+            "v": 1, "kdf": "argon2id", "salt": b64(salt), "m": 64 * MIB, "t": 3,
+            "publicKey": b64(user_pk),
+            "wrappedSecretKey": b64(wrapped_sk),
+            "recoveryWrappedSecretKey": b64(recovery_wrapped),
         },
         "unlock": "Both the passphrase (via kdf.cases[0]) and the recovery code open the "
                   "secret key; the public key belonging to it equals publicKeyHex.",

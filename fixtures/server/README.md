@@ -5,14 +5,14 @@
 the server where it touches the formats, must reproduce them. They are what
 makes two implementations in two languages produce the same bytes.
 
-Binary values are lowercase hex. A name that ends in `B64` is base64url without
-padding, as in the API. Every key and every nonce is fixed, so the file is
+Binary values are lowercase hex, except inside `bundle`, which is the JSON of the API and holds
+base64url without padding. Every key and every nonce is fixed, so the file is
 reproducible.
 
 | Section | What to check |
 |---|---|
 | `kdf` | Argon2id of the passphrase gives `keyHex`. `policy` lists the parameters a client must accept or refuse |
-| `keys` | the passphrase key and the recovery code both open the wrapped secret key; the public key of the secret key equals `publicKeyHex`. `bundle` is the key bundle as the API carries it |
+| `keys` | the passphrase key and the recovery code both open the wrapped secret key; the public key of the secret key equals `publicKeyHex`. `bundle` is the key bundle exactly as the API carries it: `PUT /v1/keys` takes it, `GET /v1/keys` returns it |
 | `grants` | opening a handed-over project key with the recipient's secret key and the sender's public key gives `projectKeyHex`, with the right `projectId` and `keyVersion` in the message |
 | `documents` | decrypting `envelopeHex` with `keyHex` and `aadHex` gives the plaintext. A client also builds `aadHex` itself from kind, id, keyVersion and rev and must arrive at the same bytes. Building the envelope with `nonceHex` must give `envelopeHex` |
 | `blob` | the same for an image, and `sha256Hex` is the SHA-256 of the envelope |

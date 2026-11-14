@@ -59,12 +59,12 @@
     "bundle": {
       "v": 1,
       "kdf": "argon2id",
-      "saltB64": "Y0ea1poJCyWCd-yPum-ZQQ",
+      "salt": "Y0ea1poJCyWCd-yPum-ZQQ",
       "m": 67108864,
       "t": 3,
-      "publicKeyB64": "xqvPeYz2DZGO84hTRvzQEjk1LWMtgHv4pzM8WQeqnlg",
-      "wrappedSecretKeyB64": "AQH7X9g8Q6FE84GD5h-8F385uJ8bwrSV8km4JUTZYvnTAYr_XgdDU_3mCIdvIEUHavMUh_QmJtJPMN1aaOf20lFikn7ti6Kq1Lw",
-      "recoveryWrappedSecretKeyB64": "AQEvxMTRk06KR79b4d9hWh1yg3lEtZmsrA-PYWU7TlqTOruSAeET_sSazXw-pYCJpxTuum6M096n11HkZ7lk06p941pY0h_DfjM"
+      "publicKey": "xqvPeYz2DZGO84hTRvzQEjk1LWMtgHv4pzM8WQeqnlg",
+      "wrappedSecretKey": "AQH7X9g8Q6FE84GD5h-8F385uJ8bwrSV8km4JUTZYvnTAYr_XgdDU_3mCIdvIEUHavMUh_QmJtJPMN1aaOf20lFikn7ti6Kq1Lw",
+      "recoveryWrappedSecretKey": "AQEvxMTRk06KR79b4d9hWh1yg3lEtZmsrA-PYWU7TlqTOruSAeET_sSazXw-pYCJpxTuum6M096n11HkZ7lk06p941pY0h_DfjM"
     },
     "unlock": "Both the passphrase (via kdf.cases[0]) and the recovery code open the secret key; the public key belonging to it equals publicKeyHex."
   },
