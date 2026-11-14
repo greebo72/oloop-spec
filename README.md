@@ -11,6 +11,8 @@ This repo is the contract between all oloop clients. It has no code to run apart
 | Path | Content |
 |---|---|
 | `SPEC.md` | Purpose, non-goals, file format, native clients, open points |
+| `SERVER.md` | Draft of the optional server backend: client-side encryption (libsodium), API, blobs, agents for the CLI. Does not change the folder format |
+| `AGENTS.md` | Draft of the agent identities of the server backend: the CLI used by an LLM, with its own key and token, renewable by the agent itself |
 | `schemas/` | JSON Schemas for `project.md` and task files. Authoritative for the structure |
 | `fixtures/` | Valid and invalid sample data with expected results. Every client must pass them |
 | `app-brief.md` | Platform-neutral brief for building a client app |

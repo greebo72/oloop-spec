@@ -6,13 +6,13 @@ oloop keeps open items — todos, questions, decisions, features and bugs — as
 
 ## Purpose
 
-The user works on many projects in parallel (different directories, some inactive for weeks). Open todos, unanswered questions, decisions made and key features get lost between sessions and projects, and there is no central overview of what is open where. oloop is the local tool for that: Markdown files with YAML frontmatter as storage (managed by the tool, never edited by hand), a Python module used directly by the CLI, and native clients reading and writing the same files. There is no server, no account and no network access.
+The user works on many projects in parallel (different directories, some inactive for weeks). Open todos, unanswered questions, decisions made and key features get lost between sessions and projects, and there is no central overview of what is open where. oloop is the local tool for that: Markdown files with YAML frontmatter as storage (managed by the tool, never edited by hand), a Python module used directly by the CLI, and native clients reading and writing the same files. The folder backend has no server, no account and no network access; an optional server backend is drafted in `SERVER.md`.
 
 ## Non-goals
 
-- **Multi-user/auth** — single-user tool, no login, no role model.
-- **Multiple devices** — no sync protection, no cross-device locking, no conflict-copy detection. Keeping the data folder in sync across devices is the folder's own job (Syncthing, cloud drive, …), not the tool's.
-- **Network/service layer** — deliberately none. Every client accesses the files directly and re-implements the documented format.
+- **Multi-user/auth** — single-user tool, no login, no role model. (Folder backend. The optional server backend in `SERVER.md` has a login, still for one person, plus agents that person creates for the CLI.)
+- **Multiple devices** — no sync protection, no cross-device locking, no conflict-copy detection. Keeping the data folder in sync across devices is the folder's own job (Syncthing, cloud drive, …), not the tool's. The server backend in `SERVER.md` is the optional alternative for that.
+- **Network/service layer** — deliberately none for the folder format: every client accesses the files directly and re-implements the documented format. `SERVER.md` describes an optional server backend that stores the same documents encrypted; it changes nothing about the folder format.
 - **Direct editing of the files by the user** — explicit requirement. The Markdown files are an implementation detail of the tool, not a user interface.
 
 ## Backup/recovery
@@ -105,5 +105,6 @@ Look and structure: project list, task list with the project name in a header, g
 
 ## Open points
 
+- **Server backend:** `SERVER.md` is a draft; nothing implements it yet.
 - **Windows toolkit** is provisional (WPF); revisit once the Apple clients exist.
 - **MCP wrapper:** not needed for now (user decision); it would import the CLI's Python module and can be added later for clients without a shell.
