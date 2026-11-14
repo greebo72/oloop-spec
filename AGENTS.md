@@ -66,7 +66,7 @@ renews the token as above and replaces the agent's key pair. The agent needs no 
 
 1. The agent generates a new key pair.
 2. For every project it is a member of, it opens every key version it holds with the old secret key, checking the sender as always, and hands each one to **itself**: `crypto_box_easy`, recipient = the new public key, sender = the new secret key, `grantedBy` = the agent. The server cannot forge this, because it does not have the new secret key. The server refuses the change unless the new keys cover every project and every key version the agent has.
-3. It makes a **statement** for the user: `nonce` followed by `crypto_box_easy(newPublicKey | agentId | keyNumber, nonce, userPublicKey, oldSecretKey)`, with `keyNumber` counting the key pairs of the agent from 1 (4 bytes, big endian). Only the old key of the agent can make it, so it proves that the new key comes from the agent that the user created.
+3. It makes a **statement** for the user: `nonce` followed by `crypto_box_easy(newPublicKey | agentId | keyNumber, nonce, userPublicKey, oldSecretKey)`, with `keyNumber` the number of the **new** key pair of the agent, counting from 1, so the first rotation makes 2 (4 bytes, big endian). Only the old key of the agent can make it, so it proves that the new key comes from the agent that the user created.
 4. The server stores the new public key and appends the statement to the **key chain** of the agent.
 5. The agent writes the new credentials file.
 

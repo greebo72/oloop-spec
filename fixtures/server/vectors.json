@@ -1,0 +1,270 @@
+{
+  "description": "Test vectors of the server backend (SERVER.md, AGENTS.md). Binary values are lowercase hex unless a name ends in B64, which is base64url without padding as in the API. Every nonce is fixed so the file is reproducible. 'mustFail' entries are inputs a client has to refuse.",
+  "version": 1,
+  "kdf": {
+    "algorithm": "crypto_pwhash, ALG_ARGON2ID13, 32 byte output; m = memlimit in bytes, t = opslimit",
+    "cases": [
+      {
+        "name": "default",
+        "passphrase": "correct horse battery staple",
+        "saltHex": "63479ad69a090b258277ec8fba6f9941",
+        "m": 67108864,
+        "t": 3,
+        "keyHex": "274e90270a14e210e14137809392222876b50190b3643b629a89355a6388e7b3"
+      },
+      {
+        "name": "minimum",
+        "passphrase": "correct horse battery staple",
+        "saltHex": "63479ad69a090b258277ec8fba6f9941",
+        "m": 19922944,
+        "t": 2,
+        "keyHex": "2060d9dce07df1653b85d254f27374dd7f6d3e10663031ef2b49c1bf655f032d"
+      }
+    ],
+    "policy": {
+      "minM": 19922944,
+      "minT": 2,
+      "cases": [
+        {
+          "m": 19922944,
+          "t": 2,
+          "accept": true
+        },
+        {
+          "m": 67108864,
+          "t": 3,
+          "accept": true
+        },
+        {
+          "m": 19922943,
+          "t": 2,
+          "accept": false
+        },
+        {
+          "m": 19922944,
+          "t": 1,
+          "accept": false
+        }
+      ]
+    }
+  },
+  "keys": {
+    "userId": "04f8996d-a763-47a9-a9b1-028ee3007569",
+    "publicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+    "secretKeyHex": "be2ecf8c8c6f526a2a90f85554b212149bd83a63c33905c8e0b7fdebd0cb2e38",
+    "recoveryCodeHex": "a684f0ec1648981eba0495b6c8fc61fd8428b402670f0be5643d2d463a068b1c",
+    "wrappedSecretKeyHex": "0101fb5fd83c43a144f38183e61fbc177f39b89f1bc2b495f249b82544d962f9d3018aff5e074353fde608876f2045076af31487f42626d24f30dd5a68e7f6d25162927eed8ba2aad4bc",
+    "recoveryWrappedSecretKeyHex": "01012fc4c4d1934e8a47bf5be1df615a1d72837944b599acac0f8f61653b4e5a933abb9201e113fec49acd7c3ea58089a714eeba6e8cd3dea7d751e467b964d3aa7de35a58d21fc37e33",
+    "aadHex": "0101006b65790030346638393936642d613736332d343761392d613962312d303238656533303037353639",
+    "bundle": {
+      "v": 1,
+      "kdf": "argon2id",
+      "saltB64": "Y0ea1poJCyWCd-yPum-ZQQ",
+      "m": 67108864,
+      "t": 3,
+      "publicKeyB64": "xqvPeYz2DZGO84hTRvzQEjk1LWMtgHv4pzM8WQeqnlg",
+      "wrappedSecretKeyB64": "AQH7X9g8Q6FE84GD5h-8F385uJ8bwrSV8km4JUTZYvnTAYr_XgdDU_3mCIdvIEUHavMUh_QmJtJPMN1aaOf20lFikn7ti6Kq1Lw",
+      "recoveryWrappedSecretKeyB64": "AQEvxMTRk06KR79b4d9hWh1yg3lEtZmsrA-PYWU7TlqTOruSAeET_sSazXw-pYCJpxTuum6M096n11HkZ7lk06p941pY0h_DfjM"
+    },
+    "unlock": "Both the passphrase (via kdf.cases[0]) and the recovery code open the secret key; the public key belonging to it equals publicKeyHex."
+  },
+  "grants": {
+    "format": "wrapped = nonce(24) | crypto_box_easy(message, nonce, recipientPublicKey, senderSecretKey); message = projectKey(32) | projectId(16) | keyVersion(4, big endian)",
+    "cases": [
+      {
+        "name": "owner to itself",
+        "projectId": "244210e4-8437-4655-a980-a70249a99369",
+        "keyVersion": 1,
+        "projectKeyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+        "messageHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8244210e484374655a980a70249a9936900000001",
+        "wrappedHex": "3e3885ea210d52a00484fc1f8b3e664a822f2f57b379e66e691231f3854ec684420ae7cd0cdace8440d03c3ccb10df97c3f6404adcef0bde09ad50b09768f7870826ddcc69abf28243605733181374f7bde7e20473550503d74274fa",
+        "senderPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+        "recipientPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58"
+      },
+      {
+        "name": "owner to agent",
+        "projectId": "244210e4-8437-4655-a980-a70249a99369",
+        "keyVersion": 1,
+        "projectKeyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+        "messageHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8244210e484374655a980a70249a9936900000001",
+        "wrappedHex": "227d63ef67ddb827896815bde9727e037366f38826df0d2eb82e6ede4586d4d310f01c1d1c76cf4afddb7a62a7adad6c0a57ccac7dc7bc77f5784644a62403fe3c81aa586b25bc7c0f2653a384ba3dcd3d002c7fe719cac024a979b9",
+        "senderPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+        "recipientPublicKeyHex": "e4650edb56bc7cc4621cc6b6986cf6e3b0973bf9acde6b8245f1116c3af15e13"
+      },
+      {
+        "name": "owner to agent, key version 2",
+        "projectId": "244210e4-8437-4655-a980-a70249a99369",
+        "keyVersion": 2,
+        "projectKeyHex": "40f71c83cc230b664b93c9e0e221628cd2aa6a2c0b0116e38aa4f0a5b1f66ff9",
+        "messageHex": "40f71c83cc230b664b93c9e0e221628cd2aa6a2c0b0116e38aa4f0a5b1f66ff9244210e484374655a980a70249a9936900000002",
+        "wrappedHex": "cd03691e97104e0a70791547a8e1596b61e8079ee27cc531fea9dd462c2e7cc2119b04ec505877c4c7047abee3022584594c6772d16d7607d082567ec02230f6b6b03749750e50fde7a2e4c31670cda5c5de5227706f2c3943692566",
+        "senderPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+        "recipientPublicKeyHex": "e4650edb56bc7cc4621cc6b6986cf6e3b0973bf9acde6b8245f1116c3af15e13"
+      }
+    ]
+  },
+  "documents": {
+    "envelope": "v(1) | alg(1) | nonce(24) | ciphertext+tag; v=1, alg=1 (XChaCha20-Poly1305 IETF)",
+    "aad": "v and alg as bytes, then every field preceded by one 0x00 byte: 'doc', kind, id, keyVersion, rev (UUIDs lowercase, numbers decimal)",
+    "cases": [
+      {
+        "name": "project",
+        "kind": "project",
+        "id": "244210e4-8437-4655-a980-a70249a99369",
+        "keyVersion": 1,
+        "rev": 1,
+        "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+        "aadHex": "010100646f630070726f6a6563740032343432313065342d383433372d343635352d613938302d61373032343961393933363900310031",
+        "nonceHex": "a9a18b1753ebc74396077f7b663c77e116e3bb37fbbc30ef",
+        "plaintextUtf8": "---\nformatVersion: 1\nid: 244210e4-8437-4655-a980-a70249a99369\nname: Example\ncreatedAt: 2026-11-14T10:00:00Z\n---\n",
+        "envelopeHex": "0101a9a18b1753ebc74396077f7b663c77e116e3bb37fbbc30ef0d336e88725bcd343cecec27787387e05d1df30ad52f9e4c20416792b9bf8cbc5a47c9d61be7d9551aad2ca60a95a439bda771786a0f6fc4262b9ea266fb2bf59b88cb97c72f3fc2c8b1515e47e5dfdc54e0d47a3d2b2f4c1514de70ee33065e26f5b442a46e4401428ee516bc0751a5cea617a8e451f5eab9d3ef057a3bfeca"
+      },
+      {
+        "name": "task, third revision",
+        "kind": "task",
+        "id": "0ebb429f-a86d-481c-a630-fac53db1c91c",
+        "keyVersion": 1,
+        "rev": 3,
+        "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+        "aadHex": "010100646f63007461736b0030656262343239662d613836642d343831632d613633302d66616335336462316339316300310033",
+        "nonceHex": "2944cfddfa74d559c487144ba6c362d30a320d731a5ae4ca",
+        "plaintextUtf8": "---\nformatVersion: 1\nid: 0ebb429f-a86d-481c-a630-fac53db1c91c\nprojectId: 244210e4-8437-4655-a980-a70249a99369\ntype: todo\ntitle: \"Water the plants\"\nstatus: open\nimagePath: \"blob:fa2c8cc4-f281-46bb-aed4-b736df569a34\"\ncreatedAt: 2026-11-14T10:05:00Z\ncreatedBy: alice\nupdatedAt: 2026-11-14T10:05:00Z\nupdatedBy: alice\nlabels: [home]\ncomments: []\n---\nEvery Friday, with rain water.\n",
+        "envelopeHex": "01012944cfddfa74d559c487144ba6c362d30a320d731a5ae4cafd51d59983c30915fd1bad5907deb5e5ce7ca14551830795df84e8db03846149a2f24fdffcb71b497fb2bfc27b344423dc38140fe676c4a9ea15ccd1b6243152fd30979ee38c2ae6fabc4e8cc9215f23ea6368f60f264d3d69cd9631da2d4dfa9ab3404219684f6b8c14d643d01d39d9035daab6478a598b77f8ad04db0f3912bac37921fa6685d0c64d028a6122e663cbd5a2ba0855976aa5e8c5e3bd649cea93c114898b401b3603d649f840e234d08dc33a9ccc8366df44d8efa028c6e72080917a3b9180102a0b263c21d2529751d3b75764f6e2b49a5a225f47fa8fea6a70ab4e957f5f7da98c38822d382c54530830d1f45d7f32d200663fbff9f751cacb209feb9723f07bf84dd9fa62d7e4781d060f0babfe2af1578508f490f1c4c7ba30077651d547945e6887714f3b7713de63a36ae0f2146a093ee1ae5587f93caf7600fb9b844a78bfd3d97aca3f47a7b60b59ba75d716809cc927432537e31131f062f714fd75dff5297c61d12646bceaeae234511dfc3e5213f2a0de84f871e17e03be07f47871"
+      },
+      {
+        "name": "task after a key rotation",
+        "kind": "task",
+        "id": "0ebb429f-a86d-481c-a630-fac53db1c91c",
+        "keyVersion": 2,
+        "rev": 4,
+        "keyHex": "40f71c83cc230b664b93c9e0e221628cd2aa6a2c0b0116e38aa4f0a5b1f66ff9",
+        "aadHex": "010100646f63007461736b0030656262343239662d613836642d343831632d613633302d66616335336462316339316300320034",
+        "nonceHex": "fbece5ea0d050948c7e24565e1f057d5b222b48606fa4939",
+        "plaintextUtf8": "---\nformatVersion: 1\nid: 0ebb429f-a86d-481c-a630-fac53db1c91c\nprojectId: 244210e4-8437-4655-a980-a70249a99369\ntype: todo\ntitle: \"Water the plants\"\nstatus: open\nimagePath: \"blob:fa2c8cc4-f281-46bb-aed4-b736df569a34\"\ncreatedAt: 2026-11-14T10:05:00Z\ncreatedBy: alice\nupdatedAt: 2026-11-14T10:05:00Z\nupdatedBy: alice\nlabels: [home]\ncomments: []\n---\nEvery Friday, with rain water.\n",
+        "envelopeHex": "0101fbece5ea0d050948c7e24565e1f057d5b222b48606fa493978829bfbe60bf0cd8120ec12483a4a2d2cd59458b2398b4869d0786b8ea0e82d5153bbcc7c33a9149edddbdf0ef414a1d219e95cb4125f0f64b4b53311b01641bee17f5f39673f00cd7c1ab4e2686bb878d0d4e61285c0afd129b6028d90b8d771b43bb0f1f362d5570424cedf3f334bd8fdb9f596030bb2d9bd8571a7d95f2a61dad6aad2cf923275eef5cc3f9c67ffc43fd0b4498f943b91d24ebb35aeadea85248d3b2a8d027ba426472c5fe5f0638f460b9df7ad0929dcd701de33de00ca452aee60949f674fa570b07f2fb52a2f11b2d228a854e7291f4233df3c2605dacd57bc19687e03971472f243cfb807b932ea5308945b19cc59e91e899b8f2a54f83d2304613c3293e209099274fa7f6f131990301033b8e33be356ae02cb6300cdc6213611de88029735cef4917d7078e9746be31345ca01a898ee9bd1722a9ee5da51afdf2e8f908c3bd191c0c13ba680c5d1fa04253e1fd5f680f0e832c38369a85c394c2f5efdd0c07bafeb66cf6a73ec5f1a21ab5f30d38793c6eea0ff6a1bedb6ebcda3782b"
+      }
+    ]
+  },
+  "blob": {
+    "blobId": "fa2c8cc4-f281-46bb-aed4-b736df569a34",
+    "taskId": "0ebb429f-a86d-481c-a630-fac53db1c91c",
+    "keyVersion": 1,
+    "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+    "aadHex": "010100626c6f620066613263386363342d663238312d343662622d616564342d6237333664663536396133340030656262343239662d613836642d343831632d613633302d6661633533646231633931630031",
+    "nonceHex": "6c807626aac80618a7f651de5d9cace30a0effca7f1515c7",
+    "plaintextHex": "89504e470d0a1a0ade7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec",
+    "envelopeHex": "01016c807626aac80618a7f651de5d9cace30a0effca7f1515c7cf924c60e50de76db59881ffaf8c1422fbbd2801087d7ca5ac6bd367b107cdd03fc61e8968bc79a9506ae8bf6887a703b29e2bdc90bb574c",
+    "sha256Hex": "d3fdb20c411a391b150c77925b3504c29e20ff220bb50506cfbe212673822aa0",
+    "aad": "'blob', blobId, taskId, keyVersion, in the same encoding as for documents"
+  },
+  "agents": {
+    "agentId": "d4f0bc5a-29de-46b5-90f9-aa428f1eedba",
+    "userId": "04f8996d-a763-47a9-a9b1-028ee3007569",
+    "userPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+    "key1": {
+      "publicKeyHex": "e4650edb56bc7cc4621cc6b6986cf6e3b0973bf9acde6b8245f1116c3af15e13",
+      "secretKeyHex": "6cc7b631c38c703987be5594a80b4b8de7b9691c8b93aa154c5801ea83c55b6d"
+    },
+    "key2": {
+      "publicKeyHex": "6c824347ca16c359e1da73799d9babc2d80875f9994191347285a0bf5600b44f",
+      "secretKeyHex": "ef67145156831040d7ed1240045a42e2bcde9a2c1c6c105f7b1a7d1d48c0e8ba"
+    },
+    "registration": {
+      "format": "nonce(24) | crypto_box_easy(agentPublicKey(32) | agentId(16), nonce, userPublicKey, userSecretKey)",
+      "hex": "5446687c3949d316c703ce3d198d79692d66f74f2eccea0d201cd9cc0b0f128d0542a349a16725388fc10eb995f767dbc6db31748ba80abfdfaa0e806d7ee27d6f4122df780ef1406d3f586e068cf556a00c0dee3e747aab",
+      "check": "Open with the user's secret key and the user's public key; the message is key1.publicKey | agentId."
+    },
+    "statement": {
+      "format": "nonce(24) | crypto_box_easy(newPublicKey(32) | agentId(16) | keyNumber(4, big endian), nonce, userPublicKey, oldAgentSecretKey); keyNumber is the number of the NEW key, so the first rotation makes 2",
+      "keyNumber": 2,
+      "hex": "ac07f049b25a88a2e2fcb56c7070af9c5be28e58958f8f48ad53abe3600d4e5171d6e7c1726e4c1236821d5914d6dd6e1f5fca96fd9fc18014492be60522ece21a52216a3d64b5cf64c51724e9245fabd260fe697e6399439a6f6e09",
+      "check": "Open with the user's secret key and key1.publicKey; the message is key2.publicKey | agentId | 2. The chain registration -> statement ends at key2."
+    },
+    "selfGrant": {
+      "format": "a grant (see 'grants') with recipient = sender = the new key of the agent",
+      "projectId": "244210e4-8437-4655-a980-a70249a99369",
+      "keyVersion": 1,
+      "projectKeyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+      "wrappedHex": "ee517270f2b4eda0b5de7c27194397206637618a6b62492f0d1efc626641e2a7e50b3b612ea600c5576776c959312b9699bf94166034bafb1ffdd95470953643fc02502cbadf8ae263c3b79bd13a0e7d2ef264855fe287387963091e",
+      "check": "Open with key2.secretKey and key2.publicKey as the sender."
+    }
+  },
+  "mustFail": [
+    {
+      "name": "document with a changed byte",
+      "kind": "envelope",
+      "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+      "aadHex": "010100646f63007461736b0030656262343239662d613836642d343831632d613633302d66616335336462316339316300310033",
+      "envelopeHex": "01012944cfddfa74d559c487144ba6c362d30a320d731a5ae4cafd51d59983c30915fd1bad5907deb5e5ce7ca14551830795df84e8db03846149a2f24fdffcb71b497fb2bfc27b344423dc38140fe676c4a9ea15ccd1b6243152fd30979ee38c2ae6fabc4e8cc9215f23ea6368f60f264d3d69cd9631da2d4dfa9ab3404219684f6b8c14d643d01d39d9035daab6478a598b77f8ad04db0f3912bac37921fa6685d0c64d028a6122e663cbd5a2ba0855976aa5e8c5e3bd649cea93c114898b401b3603d649f840e234d08dc33a9ccc8366df44d8efa028c6e72080917a3b9180102a0b263c21d2529751d3b75764f6e2b49a5a225f47fa8fea6a70ab4e957f5f7da98c38822d382c54530830d1f45d7f32d200663fbff9f751cacb209feb9723f07bf84dd9fa62d7e4781d060f0babfe2af1578508f490f1c4c7ba30077651d547945e6887714f3b7713de63a36ae0f2146a093ee1ae5587f93caf7600fb9b844a78bfd3d97aca3f47a7b60b59ba75d716809cc927432537e31131f062f714fd75dff5297c61d12646bceaeae234511dfc3e5213f2a0de84f871e17e03be07f47870",
+      "reason": "the tag does not match"
+    },
+    {
+      "name": "revision 3 offered as revision 4",
+      "kind": "envelope",
+      "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+      "aadHex": "010100646f63007461736b0030656262343239662d613836642d343831632d613633302d66616335336462316339316300310034",
+      "envelopeHex": "01012944cfddfa74d559c487144ba6c362d30a320d731a5ae4cafd51d59983c30915fd1bad5907deb5e5ce7ca14551830795df84e8db03846149a2f24fdffcb71b497fb2bfc27b344423dc38140fe676c4a9ea15ccd1b6243152fd30979ee38c2ae6fabc4e8cc9215f23ea6368f60f264d3d69cd9631da2d4dfa9ab3404219684f6b8c14d643d01d39d9035daab6478a598b77f8ad04db0f3912bac37921fa6685d0c64d028a6122e663cbd5a2ba0855976aa5e8c5e3bd649cea93c114898b401b3603d649f840e234d08dc33a9ccc8366df44d8efa028c6e72080917a3b9180102a0b263c21d2529751d3b75764f6e2b49a5a225f47fa8fea6a70ab4e957f5f7da98c38822d382c54530830d1f45d7f32d200663fbff9f751cacb209feb9723f07bf84dd9fa62d7e4781d060f0babfe2af1578508f490f1c4c7ba30077651d547945e6887714f3b7713de63a36ae0f2146a093ee1ae5587f93caf7600fb9b844a78bfd3d97aca3f47a7b60b59ba75d716809cc927432537e31131f062f714fd75dff5297c61d12646bceaeae234511dfc3e5213f2a0de84f871e17e03be07f47871",
+      "reason": "the revision is part of the associated data"
+    },
+    {
+      "name": "the task offered as another document",
+      "kind": "envelope",
+      "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+      "aadHex": "010100646f63007461736b0032343432313065342d383433372d343635352d613938302d61373032343961393933363900310033",
+      "envelopeHex": "01012944cfddfa74d559c487144ba6c362d30a320d731a5ae4cafd51d59983c30915fd1bad5907deb5e5ce7ca14551830795df84e8db03846149a2f24fdffcb71b497fb2bfc27b344423dc38140fe676c4a9ea15ccd1b6243152fd30979ee38c2ae6fabc4e8cc9215f23ea6368f60f264d3d69cd9631da2d4dfa9ab3404219684f6b8c14d643d01d39d9035daab6478a598b77f8ad04db0f3912bac37921fa6685d0c64d028a6122e663cbd5a2ba0855976aa5e8c5e3bd649cea93c114898b401b3603d649f840e234d08dc33a9ccc8366df44d8efa028c6e72080917a3b9180102a0b263c21d2529751d3b75764f6e2b49a5a225f47fa8fea6a70ab4e957f5f7da98c38822d382c54530830d1f45d7f32d200663fbff9f751cacb209feb9723f07bf84dd9fa62d7e4781d060f0babfe2af1578508f490f1c4c7ba30077651d547945e6887714f3b7713de63a36ae0f2146a093ee1ae5587f93caf7600fb9b844a78bfd3d97aca3f47a7b60b59ba75d716809cc927432537e31131f062f714fd75dff5297c61d12646bceaeae234511dfc3e5213f2a0de84f871e17e03be07f47871",
+      "reason": "the id is part of the associated data"
+    },
+    {
+      "name": "unknown envelope version",
+      "kind": "envelope-header",
+      "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+      "envelopeHex": "0201ad741698d49deda9aaeea4ea00ef43ece2141b6cbd9dc4e012b0698eb6136be13eda4c1fcb48064422",
+      "reason": "unknown envelope version: stop and report, never write"
+    },
+    {
+      "name": "unknown algorithm",
+      "kind": "envelope-header",
+      "keyHex": "be3b45c719da0bfa0452345857cc5161fafe7aff10dd154c06f4bc18be39bbc8",
+      "envelopeHex": "0102ad741698d49deda9aaeea4ea00ef43ece2141b6cbd9dc4e01290534c7d68afa983fdb6ee72ec2a6f5e",
+      "reason": "unknown algorithm: stop and report, never write"
+    },
+    {
+      "name": "a key handed over by the server, not by the owner",
+      "kind": "grant",
+      "wrappedHex": "29334856594229ac0a1771e61a26b776c7e04eb013e5032e1da7c6882b381d965d840c8184454ac98a1da3ff42a01b7ea3128b1d7f021b446ca321b71e69b768a0ab7bd1cfbdd5b25d4252aa68726d87e0acef7b4ede0cfb77ef0946",
+      "recipientSecretKeyHex": "be2ecf8c8c6f526a2a90f85554b212149bd83a63c33905c8e0b7fdebd0cb2e38",
+      "pinnedSenderPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+      "projectId": "244210e4-8437-4655-a980-a70249a99369",
+      "keyVersion": 1,
+      "reason": "opened with the pinned public key of the owner it does not open"
+    },
+    {
+      "name": "a key for another project",
+      "kind": "grant",
+      "wrappedHex": "e0c6a19c97a0721347c25cdbde3a6d9ec2e7ad2007a6d06368facd2c5015360f86d0f2ce2cead39dbb3f896f3a64547ad0c566fb62046d6edd0468e76e68f363543375a01ea622bdfe2b281418af6d38ee3a2aeb247a1a20ca45f854",
+      "recipientSecretKeyHex": "6cc7b631c38c703987be5594a80b4b8de7b9691c8b93aa154c5801ea83c55b6d",
+      "pinnedSenderPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+      "projectId": "244210e4-8437-4655-a980-a70249a99369",
+      "keyVersion": 1,
+      "reason": "it opens, but the projectId in the message is not the expected one"
+    },
+    {
+      "name": "an old key version offered as version 2",
+      "kind": "grant",
+      "wrappedHex": "9a4b3ba53ddca8ba33ba97fc74135420ce742de04cff6608ed38ff45b3211a66273c0e5808d70371204e25f8e76053ce0e40fb6ccc4af3a1e4dfca217c29487e4cf84c03b1343912509f540009a59d071bbd90405e344981f4928b38",
+      "recipientSecretKeyHex": "6cc7b631c38c703987be5594a80b4b8de7b9691c8b93aa154c5801ea83c55b6d",
+      "pinnedSenderPublicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
+      "projectId": "244210e4-8437-4655-a980-a70249a99369",
+      "keyVersion": 2,
+      "reason": "it opens, but the keyVersion in the message is not the expected one"
+    },
+    {
+      "name": "a statement not made by the old key of the agent",
+      "kind": "statement",
+      "statementHex": "7c9f52ab512262e50f13ddb06b71bad332f6dfe9289af3c10f6605424464ccebbbf2a332756d3afc6cf892245cb225e4feab36557f1afd9c1bee4b481a827a89ec7cb11da65ac0bdb6e6c579d387884c143c2af8af85a50defbd0e74",
+      "userSecretKeyHex": "be2ecf8c8c6f526a2a90f85554b212149bd83a63c33905c8e0b7fdebd0cb2e38",
+      "previousAgentPublicKeyHex": "e4650edb56bc7cc4621cc6b6986cf6e3b0973bf9acde6b8245f1116c3af15e13",
+      "reason": "opened with the previous key of the agent it does not open"
+    }
+  ]
+}

@@ -20,3 +20,5 @@ and the result equals `expected.json`.
 The schemas in `../schemas/` are the authority for structure. These fixtures add the rules a
 schema cannot express: the file name must equal the task `id`, and files with a newer
 `formatVersion` must be refused.
+
+The test vectors of the optional server backend are in `server/` (see `server/README.md`). They are not part of the data roots above and are not needed by a client that only uses a data folder.
