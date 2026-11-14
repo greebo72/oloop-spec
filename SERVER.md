@@ -237,8 +237,11 @@ GET  /v1/blobs/{blobId}  → envelope; ETag is the SHA-256
 HEAD /v1/blobs/{blobId}
 ```
 
-- A blob is immutable. A second `PUT` of the same `blobId` succeeds only with the same hash, otherwise `409`. A client uses a new `blobId` for every image.
+- A blob is immutable. A second `PUT` of the same `blobId` succeeds only with the same hash and the same task, otherwise `409`. A client uses a new `blobId` for every image.
+- The task of `X-Oloop-Task` has to exist: its project decides who may upload. An image is therefore added to a task that has been written, and a task cannot be created with a `blobRef`. Without that task, or without access to its project, the answer is `404`.
 - The caller needs read access to the project of the task for `GET` and write access for `PUT`.
+- The body is an envelope: the server refuses one that is shorter than the fixed parts of an envelope or whose `v` and `alg` are not 1, with `400`. A hash that is not the one of the body is `400`, too.
+- A task document may carry a `blobRef` only for a blob that was uploaded for that task; the server refuses a write with another one with `400`.
 - Limit: 10 MiB per blob. The server checks the hash after receiving the body, writes to a temporary file in the same directory, flushes, renames, and only then records the blob. A blob is never listed without its file.
 - The server keeps blobs as files in its own storage, not in the database. Where is up to the server.
 
@@ -250,7 +253,7 @@ On this backend `imagePath` of a task is `"blob:<blobId>"` instead of a relative
 - *Remove:* write the task with `imagePath: null`, `blobRef: null`, and the updated `updatedAt` and `updatedBy`.
 - The type is not in the id. A client recognizes it from the decrypted bytes and accepts only `png`, `jpeg`, `gif` and `webp`, as the folder backend does for its extensions.
 - A missing blob is not an error: the client shows that the image is missing.
-- **Clean-up is the server's job.** A client never deletes a blob. The server removes a blob that was never referenced by a task after 24 hours (an aborted upload), and a blob that no document refers to any more after 30 days.
+- **Clean-up is the server's job.** A client never deletes a blob. The server removes a blob that was never referenced by a task after 24 hours (an aborted upload), and a blob that the current revision of no document refers to any more after 30 days, counted from the write that dropped it. Writing a revision that refers to it again, a restore for example, starts it anew. Temporary files of aborted uploads go with it.
 
 ## Concurrency
 
