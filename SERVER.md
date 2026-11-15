@@ -159,11 +159,13 @@ An error is `{ "error": { "code": "...", "message": "..." } }` with a status:
 
 ```
 POST /v1/auth/login      { username, password, deviceName }
-                         → { accessToken, expiresIn, refreshToken }
-POST /v1/auth/refresh    { refreshToken } → { accessToken, expiresIn, refreshToken }
+                         → { accessToken, expiresIn, refreshToken, userId }
+POST /v1/auth/refresh    { refreshToken } → { accessToken, expiresIn, refreshToken, userId }
 POST /v1/auth/logout
 GET  /healthz            → 200, no data, no authentication
 ```
+
+`userId` is the UUID of the user (lowercase, with dashes). The two calls that hand out tokens return it, so that a client has it from the first moment. It needs it for the associated data of its key bundle (`"key"`, user id) before there is a bundle to ask for, to see which key hand-overs it made itself (`grantedBy`), and to show which revisions it wrote (`writtenBy`). It is not the user name, which a person types and which the server compares without regard to case.
 
 **Key bundle** (users)
 
