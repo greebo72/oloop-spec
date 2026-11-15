@@ -128,7 +128,7 @@ A client that meets a `v` or `alg` it does not know stops and reports it. It nev
 
 ### Limits of the protection
 
-A malicious server can withhold or delete data, and it can answer with an older state of a whole document that was consistent at the time. A client keeps the highest `rev` it has seen per document on this device and warns when the server shows a lower one. A server cannot read data, and cannot change it without detection. Other limits are listed under Threat model.
+A malicious server can withhold or delete data, and it can answer with an older state of a whole document that was consistent at the time. A client keeps the highest `rev` it has seen per document on this device and warns when the server shows a lower one. The record survives a restart of the client: if it were kept in memory only, a server could wait until the client is closed and then show the older state. It belongs to one server and one user, so the record of one account is never used for another. A server that was restored from a backup on purpose shows older states legitimately, and the client would refuse them for ever; so a client offers a way to forget the record, and says so where it warns. A server cannot read data, and cannot change it without detection. Other limits are listed under Threat model.
 
 ## Authentication
 
