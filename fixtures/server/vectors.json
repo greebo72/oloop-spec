@@ -3,6 +3,126 @@
   "version": 1,
   "kdf": {
     "algorithm": "crypto_pwhash, ALG_ARGON2ID13, 32 byte output; m = memlimit in bytes, t = opslimit",
+    "encoding": {
+      "rule": "the UTF-8 bytes of the text exactly as typed or pasted, no normalization; text that is not valid Unicode is refused",
+      "cases": [
+        {
+          "name": "u-umlaut as one character (NFC)",
+          "codePoints": [
+            252
+          ],
+          "utf8Hex": "c3bc"
+        },
+        {
+          "name": "u followed by a combining diaeresis (NFD)",
+          "codePoints": [
+            117,
+            776
+          ],
+          "utf8Hex": "75cc88"
+        },
+        {
+          "name": "fi ligature, not folded to fi",
+          "codePoints": [
+            64257
+          ],
+          "utf8Hex": "efac81"
+        },
+        {
+          "name": "fullwidth digit one, not folded to 1",
+          "codePoints": [
+            65297
+          ],
+          "utf8Hex": "efbc91"
+        },
+        {
+          "name": "no-break space, not folded to a space",
+          "codePoints": [
+            97,
+            160,
+            98
+          ],
+          "utf8Hex": "61c2a062"
+        },
+        {
+          "name": "a character outside the basic plane",
+          "codePoints": [
+            128273
+          ],
+          "utf8Hex": "f09f9491"
+        },
+        {
+          "name": "a german word",
+          "codePoints": [
+            77,
+            252,
+            223,
+            105,
+            103
+          ],
+          "utf8Hex": "4dc3bcc39f6967"
+        },
+        {
+          "name": "spaces at the edges and a double space are kept",
+          "codePoints": [
+            32,
+            97,
+            32,
+            32,
+            98,
+            32
+          ],
+          "utf8Hex": "206120206220"
+        },
+        {
+          "name": "a line break at the end of a pasted text is kept",
+          "codePoints": [
+            97,
+            98,
+            10
+          ],
+          "utf8Hex": "61620a"
+        }
+      ],
+      "refused": [
+        {
+          "name": "a lone high surrogate",
+          "codePoints": [
+            97,
+            55296
+          ]
+        },
+        {
+          "name": "a lone low surrogate",
+          "codePoints": [
+            56320
+          ]
+        }
+      ],
+      "keys": {
+        "saltHex": "63479ad69a090b258277ec8fba6f9941",
+        "m": 19922944,
+        "t": 2,
+        "cases": [
+          {
+            "name": "u-umlaut as one character (NFC)",
+            "codePoints": [
+              252
+            ],
+            "keyHex": "362d43b263fc9b81512b6fdad6bfb430f81e73696fde5ad2cf4831a9cf54bac9"
+          },
+          {
+            "name": "u followed by a combining diaeresis (NFD)",
+            "codePoints": [
+              117,
+              776
+            ],
+            "keyHex": "8459ee3383fd75055df9201bb369ca19c0b8d0f1736a0aad16dfae51466329dc"
+          }
+        ],
+        "note": "the two keys differ: the two spellings are two passphrases"
+      }
+    },
     "cases": [
       {
         "name": "default",

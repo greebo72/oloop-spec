@@ -11,7 +11,7 @@ reproducible.
 
 | Section | What to check |
 |---|---|
-| `kdf` | Argon2id of the passphrase gives `keyHex`. `policy` lists the parameters a client must accept or refuse |
+| `kdf` | Argon2id of the passphrase gives `keyHex`. `policy` lists the parameters a client must accept or refuse. `encoding` pins how typed text becomes bytes: UTF-8, **no normalization** (`utf8Hex` of each text, given as code points), text that is not valid Unicode is refused (`refused`), and the two spellings of an umlaut give two different keys (`keys`) |
 | `keys` | the passphrase key and the recovery code both open the wrapped secret key; the public key of the secret key equals `publicKeyHex`. `bundle` is the key bundle exactly as the API carries it: `PUT /v1/keys` takes it, `GET /v1/keys` returns it |
 | `grants` | opening a handed-over project key with the recipient's secret key and the sender's public key gives `projectKeyHex`, with the right `projectId` and `keyVersion` in the message |
 | `documents` | decrypting `envelopeHex` with `keyHex` and `aadHex` gives the plaintext. A client also builds `aadHex` itself from kind, id, keyVersion and rev and must arrive at the same bytes. Building the envelope with `nonceHex` must give `envelopeHex` |

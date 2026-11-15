@@ -149,8 +149,45 @@ def build():
     for name, m, t in (("default", 64 * MIB, 3), ("minimum", MIN_M, MIN_T)):
         cases.append({"name": name, "passphrase": passphrase, "saltHex": hx(salt),
                       "m": m, "t": t, "keyHex": hx(kdf(passphrase, salt, m, t))})
+    # How text becomes bytes (SERVER.md, "Key hierarchy"): UTF-8 of the text as typed, no
+    # normalization. Texts are given as code points, so that no editor or transport can
+    # change the spelling of the vectors themselves.
+    def text(code_points):
+        return "".join(map(chr, code_points))
+
+    typed = [
+        ("u-umlaut as one character (NFC)", [0xFC]),
+        ("u followed by a combining diaeresis (NFD)", [0x75, 0x308]),
+        ("fi ligature, not folded to fi", [0xFB01]),
+        ("fullwidth digit one, not folded to 1", [0xFF11]),
+        ("no-break space, not folded to a space", [0x61, 0xA0, 0x62]),
+        ("a character outside the basic plane", [0x1F511]),
+        ("a german word", [0x4D, 0xFC, 0xDF, 0x69, 0x67]),
+        ("spaces at the edges and a double space are kept", [0x20, 0x61, 0x20, 0x20, 0x62, 0x20]),
+        ("a line break at the end of a pasted text is kept", [0x61, 0x62, 0x0A]),
+    ]
+    umlaut_keys = []
+    for name, points in typed[:2]:
+        umlaut_keys.append({"name": name, "codePoints": points,
+                            "keyHex": hx(kdf(text(points), salt, MIN_M, MIN_T))})
+    assert umlaut_keys[0]["keyHex"] != umlaut_keys[1]["keyHex"]
+
     v["kdf"] = {
         "algorithm": "crypto_pwhash, ALG_ARGON2ID13, 32 byte output; m = memlimit in bytes, t = opslimit",
+        "encoding": {
+            "rule": "the UTF-8 bytes of the text exactly as typed or pasted, no normalization; "
+                    "text that is not valid Unicode is refused",
+            "cases": [{"name": name, "codePoints": points, "utf8Hex": hx(text(points).encode())}
+                      for name, points in typed],
+            "refused": [
+                {"name": "a lone high surrogate", "codePoints": [0x61, 0xD800]},
+                {"name": "a lone low surrogate", "codePoints": [0xDC00]},
+            ],
+            "keys": {
+                "saltHex": hx(salt), "m": MIN_M, "t": MIN_T, "cases": umlaut_keys,
+                "note": "the two keys differ: the two spellings are two passphrases",
+            },
+        },
         "cases": cases,
         "policy": {
             "minM": MIN_M, "minT": MIN_T,
