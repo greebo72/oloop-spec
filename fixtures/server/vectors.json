@@ -173,6 +173,7 @@
     "publicKeyHex": "c6abcf798cf60d918ef3885346fcd01239352d632d807bf8a7333c5907aa9e58",
     "secretKeyHex": "be2ecf8c8c6f526a2a90f85554b212149bd83a63c33905c8e0b7fdebd0cb2e38",
     "recoveryCodeHex": "a684f0ec1648981eba0495b6c8fc61fd8428b402670f0be5643d2d463a068b1c",
+    "recoveryCodeText": "U2CP-B3AW-JCMB-5OQE-SW3M-R7DB-7WCC-RNAC-M4HQ-XZLE-HUWU-MOQG-RMOA",
     "wrappedSecretKeyHex": "0101fb5fd83c43a144f38183e61fbc177f39b89f1bc2b495f249b82544d962f9d3018aff5e074353fde608876f2045076af31487f42626d24f30dd5a68e7f6d25162927eed8ba2aad4bc",
     "recoveryWrappedSecretKeyHex": "01012fc4c4d1934e8a47bf5be1df615a1d72837944b599acac0f8f61653b4e5a933abb9201e113fec49acd7c3ea58089a714eeba6e8cd3dea7d751e467b964d3aa7de35a58d21fc37e33",
     "aadHex": "0101006b65790030346638393936642d613736332d343761392d613962312d303238656533303037353639",
@@ -187,6 +188,53 @@
       "recoveryWrappedSecretKey": "AQEvxMTRk06KR79b4d9hWh1yg3lEtZmsrA-PYWU7TlqTOruSAeET_sSazXw-pYCJpxTuum6M096n11HkZ7lk06p941pY0h_DfjM"
     },
     "unlock": "Both the passphrase (via kdf.cases[0]) and the recovery code open the secret key; the public key belonging to it equals publicKeyHex."
+  },
+  "recoveryCode": {
+    "note": "32 bytes are 52 letters (the last has 4 unused bits), shown as 13 groups of four joined by '-'. A client reads the code without regard to case, spaces and dashes, and refuses anything else.",
+    "accept": [
+      {
+        "text": "U2CP-B3AW-JCMB-5OQE-SW3M-R7DB-7WCC-RNAC-M4HQ-XZLE-HUWU-MOQG-RMOA",
+        "bytesHex": "a684f0ec1648981eba0495b6c8fc61fd8428b402670f0be5643d2d463a068b1c"
+      },
+      {
+        "text": "u2cp-b3aw-jcmb-5oqe-sw3m-r7db-7wcc-rnac-m4hq-xzle-huwu-moqg-rmoa",
+        "bytesHex": "a684f0ec1648981eba0495b6c8fc61fd8428b402670f0be5643d2d463a068b1c"
+      },
+      {
+        "text": "U2CP B3AW JCMB 5OQE SW3M R7DB 7WCC RNAC M4HQ XZLE HUWU MOQG RMOA",
+        "bytesHex": "a684f0ec1648981eba0495b6c8fc61fd8428b402670f0be5643d2d463a068b1c"
+      },
+      {
+        "text": " U2CPB3AWJCMB5OQESW3MR7DB7WCCRNACM4HQXZLEHUWUMOQGRMOA\n",
+        "bytesHex": "a684f0ec1648981eba0495b6c8fc61fd8428b402670f0be5643d2d463a068b1c"
+      },
+      {
+        "text": "AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA",
+        "bytesHex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "refuse": [
+      {
+        "text": "",
+        "reason": "empty"
+      },
+      {
+        "text": "U2CPB3AWJCMB5OQESW3MR7DB7WCCRNACM4HQXZLEHUWUMOQGRMO",
+        "reason": "51 letters"
+      },
+      {
+        "text": "U2CPB3AWJCMB5OQESW3MR7DB7WCCRNACM4HQXZLEHUWUMOQGRMOAA",
+        "reason": "53 letters"
+      },
+      {
+        "text": "12CPB3AWJCMB5OQESW3MR7DB7WCCRNACM4HQXZLEHUWUMOQGRMOA",
+        "reason": "1 is not in the alphabet"
+      },
+      {
+        "text": "AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAB",
+        "reason": "the unused bits of the last letter are not zero"
+      }
+    ]
   },
   "grants": {
     "format": "wrapped = nonce(24) | crypto_box_easy(message, nonce, recipientPublicKey, senderSecretKey); message = projectKey(32) | projectId(16) | keyVersion(4, big endian)",

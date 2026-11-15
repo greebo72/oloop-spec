@@ -110,6 +110,12 @@ def box_open(data, recipient_sk, sender_pk):
     return nb.crypto_box_open(data[24:], data[:24], sender_pk, recipient_sk)
 
 
+def recovery_text(code):
+    """The recovery code as shown (SERVER.md): base32 (RFC 4648, no padding) in groups of four, with dashes."""
+    letters = base64.b32encode(code).decode().rstrip("=")
+    return "-".join(letters[i:i + 4] for i in range(0, len(letters), 4))
+
+
 def kdf(passphrase, salt, m, t):
     return pwhash.argon2id.kdf(32, passphrase.encode(), salt, opslimit=t, memlimit=m)
 
@@ -209,6 +215,7 @@ def build():
         "userId": str(user_id),
         "publicKeyHex": hx(user_pk), "secretKeyHex": hx(user_sk),
         "recoveryCodeHex": hx(recovery_code),
+        "recoveryCodeText": recovery_text(recovery_code),
         "wrappedSecretKeyHex": hx(wrapped_sk),
         "recoveryWrappedSecretKeyHex": hx(recovery_wrapped),
         "aadHex": hx(key_aad(user_id)),
@@ -222,6 +229,28 @@ def build():
         },
         "unlock": "Both the passphrase (via kdf.cases[0]) and the recovery code open the "
                   "secret key; the public key belonging to it equals publicKeyHex.",
+    }
+
+    letters = recovery_text(recovery_code).replace("-", "")
+    zero_text = recovery_text(bytes(32))
+    assert zero_text.endswith("A")
+    v["recoveryCode"] = {
+        "note": "32 bytes are 52 letters (the last has 4 unused bits), shown as 13 groups of four joined by '-'. "
+                "A client reads the code without regard to case, spaces and dashes, and refuses anything else.",
+        "accept": [
+            {"text": recovery_text(recovery_code), "bytesHex": hx(recovery_code)},
+            {"text": recovery_text(recovery_code).lower(), "bytesHex": hx(recovery_code)},
+            {"text": recovery_text(recovery_code).replace("-", " "), "bytesHex": hx(recovery_code)},
+            {"text": " " + letters + "\n", "bytesHex": hx(recovery_code)},
+            {"text": zero_text, "bytesHex": hx(bytes(32))},
+        ],
+        "refuse": [
+            {"text": "", "reason": "empty"},
+            {"text": letters[:-1], "reason": "51 letters"},
+            {"text": letters + "A", "reason": "53 letters"},
+            {"text": "1" + letters[1:], "reason": "1 is not in the alphabet"},
+            {"text": zero_text[:-1] + "B", "reason": "the unused bits of the last letter are not zero"},
+        ],
     }
 
     # --- 3. Handing a project key over
