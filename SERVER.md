@@ -253,6 +253,7 @@ On this backend `imagePath` of a task is `"blob:<blobId>"` instead of a relative
 
 - *Add / replace:* encrypt the image with the project key, upload it under a new `blobId`, then write the task with the new `imagePath`, `blobRef`, `updatedAt` and `updatedBy`. If writing the task fails, the uploaded blob is left for the server to remove.
 - *Remove:* write the task with `imagePath: null`, `blobRef: null`, and the updated `updatedAt` and `updatedBy`.
+- The key version is not on the blob either. The associated data of a blob contains it, so a client that reads an image tries the versions of the project key it holds, the newest first; the tag of the envelope shows the right one, and a blob that opens with none is reported as not readable. A client that writes an image uses the newest version it holds.
 - The type is not in the id. A client recognizes it from the decrypted bytes and accepts only `png`, `jpeg`, `gif` and `webp`, as the folder backend does for its extensions.
 - A missing blob is not an error: the client shows that the image is missing.
 - **Clean-up is the server's job.** A client never deletes a blob. The server removes a blob that was never referenced by a task after 24 hours (an aborted upload), and a blob that the current revision of no document refers to any more after 30 days, counted from the write that dropped it. Writing a revision that refers to it again, a restore for example, starts it anew. Temporary files of aborted uploads go with it.
