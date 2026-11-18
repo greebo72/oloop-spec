@@ -53,7 +53,8 @@ The CLI calls `POST /v1/agent/renew` with the current token and writes the new t
 
 - The new token is valid for the same time as the original (`lifetime`), counted from now, but never beyond `renewUntil`. `renewUntil` is fixed when the agent is created (default one year after creation, `--renew-until`), so a stolen token cannot be renewed forever. `--no-renew` sets it to the first expiry.
 - An expired, revoked or non-renewable token cannot be renewed. Then the user issues a new one: `oloop agent renew <name>` as the user, which writes a new credentials file (`POST /v1/agents/{id}/token`) and starts a new renewal period. A revoked agent stays revoked.
-- The old token stays valid for 10 minutes after a renewal, so a lost response does not lock the agent out.
+- The old token stays valid for 10 minutes after a renewal, so a lost response does not lock the agent out. The agent can ask again with the old token in that time and gets a token of the same expiry, even at the end of the renewal period. Only a token that is not replaced, or one within its 10 minutes, can renew.
+- A token that cannot live longer than the current one (the renewal period is used up, or the agent was made with `--no-renew`) is refused with `403`.
 - **Renewal is never automatic.** The CLI renews only when it is told to, and it says how long the token is valid. An agent that renewed silently would live on without the user noticing. The CLI warns on every run when the token expires within 14 days.
 
 ## Rotating the key pair
@@ -62,10 +63,10 @@ The CLI calls `POST /v1/agent/renew` with the current token and writes the new t
 oloop agent renew --keypair
 ```
 
-renews the token as above and replaces the agent's key pair. The agent needs no help of the user for this, because it can open its own keys with the old secret key. In one step (`PUT /v1/agent/keypair`, atomic: all or nothing):
+renews the token as above and replaces the agent's key pair. The agent needs no help of the user for this, because it can open its own keys with the old secret key. The same rules as for a renewal apply: a token that cannot be renewed cannot rotate. In one step (`PUT /v1/agent/keypair`, atomic: all or nothing):
 
 1. The agent generates a new key pair.
-2. For every project it is a member of, it opens every key version it holds with the old secret key, checking the sender as always, and hands each one to **itself**: `crypto_box_easy`, recipient = the new public key, sender = the new secret key, `grantedBy` = the agent. The server cannot forge this, because it does not have the new secret key. The server refuses the change unless the new keys cover every project and every key version the agent has.
+2. For every project it is a member of, it opens every key version it holds with the old secret key, checking the sender as always, and hands each one to **itself**: `crypto_box_easy`, recipient = the new public key, sender = the new secret key, `grantedBy` = the agent. The server cannot forge this, because it does not have the new secret key. The server refuses the change (`400`) unless the new keys cover every project and every key version the agent has, each once and nothing else, and unless the new public key differs from the current one. The statement is 92 bytes.
 3. It makes a **statement** for the user: `nonce` followed by `crypto_box_easy(newPublicKey | agentId | keyNumber, nonce, userPublicKey, oldSecretKey)`, with `keyNumber` the number of the **new** key pair of the agent, counting from 1, so the first rotation makes 2 (4 bytes, big endian). Only the old key of the agent can make it, so it proves that the new key comes from the agent that the user created.
 4. The server stores the new public key and appends the statement to the **key chain** of the agent.
 5. The agent writes the new credentials file.
@@ -113,6 +114,15 @@ PUT  /v1/agent/keypair         (agent)
 ```
 
 `token` is shown once; the server keeps only its hash. Revoking ends the token and removes every membership of the agent. A rotation of the key pair returns a fresh token like a renewal does.
+
+Details the server enforces:
+
+- **Creating** answers `{ agentId, token, expiresAt }`. `expiresAt` defaults to 90 days from now; `renewUntil` to one year from now, or `expiresAt` when that is later. Both are at most 10 years away, `renewUntil` is not before `expiresAt`, and a time needs its zone (`Z`). `publicKey` is 32 bytes and `registration` 88 bytes (nonce, the 48 byte message and the tag), both base64url; the server checks the size and cannot check more.
+- **Names** are 1 to 100 characters and unique among the agents of one user that are not revoked, compared without regard to case. A second one answers `409`. A revoked agent's name is free again.
+- **Revoking** answers `204` and can be repeated. `POST /v1/agents/{id}/token` for a revoked agent answers `409`.
+- **A new token from the user** ends the tokens of the agent at once (no grace) and starts a new renewal period of the same length as the first.
+- **Another user's agent** is `404` to everyone but its owner.
+- **An agent calling what is for users** (creating projects, the key bundle, logout, `/v1/agents`, the members of a project) is answered with `403`.
 
 ## Conformance
 

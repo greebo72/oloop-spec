@@ -202,6 +202,12 @@ POST /v1/projects/{id}/revoke                       (owner)
                                                    members: [{ principalId, wrapped }] } }
 ```
 
+Details the server enforces:
+
+- Only the owner may list members, add or change one, or revoke one; another member gets `403`, a stranger `404`.
+- `PUT .../members/{principalId}` answers `204`. `role` is `write` or `read`. The principal must be an agent of the owner that is not revoked, otherwise `404`; the id of a user answers `400`. `keys` holds each key version at most once, none that the project does not have, and the newest one (`400` otherwise); `wrapped` has 92 bytes. Putting again changes the role and replaces or adds keys. `grantedBy` is the owner.
+- `POST .../revoke` answers `204`. The owner cannot be removed (`400`). Without `newKey` the member and its keys are removed. With `newKey`, `keyVersion` must be the newest plus one and `members` must name exactly the remaining members, each once; anything else is `400` and nothing changes. If another request raised the key version first, the answer is `409`.
+
 The first `PUT` of the project document makes the caller its owner (see Documents). In V1 the server accepts only agents as further members. Revoking a member with `newKey` raises the `keyVersion` of the project: `newKey` must carry a `wrapped` for every remaining member, or the server answers `400`. Members keep the older versions of the key they already have; those stay in `keys`.
 
 **Documents**
@@ -224,6 +230,7 @@ Document = { id, kind, projectId?, keyVersion, rev, blobRef?, size, writtenBy, u
 - **Creating a project:** the new document has `kind` `project`, `keyVersion` 1 and a `key` = `{ keyVersion, wrapped }`: the project key handed to the caller itself. The server records the caller as owner. Only a user can create a project.
 - **Who may write:** a member with role `write` or `owner`. A `read` member only reads. A task document must name a `projectId` the caller may write to, and a `keyVersion` that exists for that project.
 - **Cursor and pages:** a client treats a cursor as an opaque string. It keeps what the server gave and sends it back, and never builds one, parses it or compares two. A page holds at most `limit` documents (default 100, at most 500) and at most 4 MiB of them, but at least one. So a page can be shorter than `limit` while `hasMore` is true: a client goes on until `hasMore` is false and never takes a short page for the end. An unknown cursor is answered with `400`.
+- **A member that joins:** when a member is added to a project, the server gives every document of the project a new number of change, without a new revision. The feed shows them again to everyone in the project, so a member with a saved cursor gets what was written before it joined, and a client that has the revision already ignores it. Changing the role of a member does not do this.
 - **Loading everything** is `GET /v1/documents` with an empty cursor, repeated with `nextCursor` while `hasMore` is true. The feed holds only documents of projects the caller is a member of. The same call with a saved cursor returns only what changed since. A client reads `GET /v1/projects` first, to have the keys.
 - **Noticing changes:** `GET /v1/head` is cheap. A client polls it every 5 to 10 seconds while the app is in front and reloads when `cursor` differs from the one it last saw. This takes the place of the file watcher. A push channel (SSE) may be added later.
 - **History:** the server keeps at least the last 10 revisions of every document and may drop older ones. `GET /v1/documents/{id}/revisions` lists `rev`, `keyVersion`, `writtenBy` and time; `GET /v1/documents/{id}/revisions/{rev}` returns one. This replaces `.backup/`. A restore is an ordinary write of the old payload as a new revision.
