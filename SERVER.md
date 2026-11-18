@@ -132,11 +132,11 @@ A malicious server can withhold or delete data, and it can answer with an older 
 
 ## Authentication
 
-- Users sign in with a user name and password. The server stores only an Argon2id hash of the password. Accounts are created by the operator (`oloop-server create-user`); there is no public registration endpoint.
-- `POST /v1/auth/login` returns a short-lived access token (15 minutes) and a refresh token. Every request except `GET /healthz` carries `Authorization: Bearer <token>`.
+- Users sign in with a user name and password. The server stores only an Argon2id hash of the password. Accounts are created by the operator (`oloop-server create-user`); there is no public registration endpoint. A user name is 1 to 100 characters: letters, digits and `. _ @ -`. The server compares names without regard to case and ignores spaces at the edges. A password has at least 12 characters.
+- `POST /v1/auth/login` returns a short-lived access token (15 minutes) and a refresh token, valid for 30 days by default and renewed at every use. Every request except `GET /healthz` carries `Authorization: Bearer <token>`.
 - Refresh tokens belong to a device, rotate on every use, and a refresh token that is used twice revokes its device. `POST /v1/auth/logout` revokes the device.
 - An **agent token** is an opaque random string that is used directly as the bearer token. It expires, can be renewed under rules, and is revoked at once by its user; see `AGENTS.md`.
-- The server limits failed logins and answers `429` with `Retry-After`.
+- The server limits failed logins and answers `429` with `Retry-After` (seconds). By default 5 failures for one user name, or 20 from one address, within 15 minutes lock it until the oldest of them leaves that window. The client address is the one the trusted proxy reports in `X-Forwarded-For`.
 - A client keeps tokens, and the secret key if the user chose "remember on this device", in the operating system's secret store, never in the settings file. The CLI follows `AGENTS.md`.
 
 ## API v1
@@ -223,6 +223,7 @@ Document = { id, kind, projectId?, keyVersion, rev, blobRef?, size, writtenBy, u
 
 - **Creating a project:** the new document has `kind` `project`, `keyVersion` 1 and a `key` = `{ keyVersion, wrapped }`: the project key handed to the caller itself. The server records the caller as owner. Only a user can create a project.
 - **Who may write:** a member with role `write` or `owner`. A `read` member only reads. A task document must name a `projectId` the caller may write to, and a `keyVersion` that exists for that project.
+- **Cursor and pages:** a client treats a cursor as an opaque string. It keeps what the server gave and sends it back, and never builds one, parses it or compares two. A page holds at most `limit` documents (default 100, at most 500) and at most 4 MiB of them, but at least one. So a page can be shorter than `limit` while `hasMore` is true: a client goes on until `hasMore` is false and never takes a short page for the end. An unknown cursor is answered with `400`.
 - **Loading everything** is `GET /v1/documents` with an empty cursor, repeated with `nextCursor` while `hasMore` is true. The feed holds only documents of projects the caller is a member of. The same call with a saved cursor returns only what changed since. A client reads `GET /v1/projects` first, to have the keys.
 - **Noticing changes:** `GET /v1/head` is cheap. A client polls it every 5 to 10 seconds while the app is in front and reloads when `cursor` differs from the one it last saw. This takes the place of the file watcher. A push channel (SSE) may be added later.
 - **History:** the server keeps at least the last 10 revisions of every document and may drop older ones. `GET /v1/documents/{id}/revisions` lists `rev`, `keyVersion`, `writtenBy` and time; `GET /v1/documents/{id}/revisions/{rev}` returns one. This replaces `.backup/`. A restore is an ordinary write of the old payload as a new revision.
