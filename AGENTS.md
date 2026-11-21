@@ -15,8 +15,10 @@ An agent is the way the CLI is used by an LLM on behalf of a user without giving
 The only thing an agent holds. A JSON file with the mode `0600`, written atomically (temporary file, then replace):
 
 ```
-{ server, agentId, token, publicKey, secretKey, owner: { id, publicKey } }
+{ server, agentId, name, token, publicKey, secretKey, owner: { id, publicKey } }
 ```
+
+`agentId` is the identity: every request, key hand-over and registration refers to it. `name` is the name the user gave the agent when creating it (1 to 100 characters, as the server stores it). It is a label for people and for the default `createdBy`/`updatedBy` (see "Who wrote what"); it is not an identity and nothing checks it. A file without `name` stays valid (files written before this field existed): a reader then has no name and falls back as if there were none. A reader keeps fields it does not know when it rewrites the file (for a renewal), so `name` survives `oloop agent renew`.
 
 It never holds the user's passphrase, the user's secret key, the recovery code or the keys of projects that were not granted to it. `owner.publicKey` comes from the user's own client when the agent is created; it is what the agent checks every key it receives against (see `SERVER.md`, "Handing a project key to a principal").
 
@@ -24,10 +26,10 @@ It never holds the user's passphrase, the user's secret key, the recovery code o
 
 Done by the user, at a terminal, in their own client, because it needs the user's secret key:
 
-1. The client generates a key pair for the agent.
-2. It registers the agent (`POST /v1/agents`) and gets the token. In the same request it sends a **registration**: `nonce` followed by `crypto_box_easy(agentPublicKey | agentId, nonce, userPublicKey, userSecretKey)`. Only the user's key can make it, so the server cannot invent an agent key. A client on another device of the user starts from this and needs no copied pin.
+1. The client generates a key pair for the agent **and the agent's id**, a random UUID (version 4, lowercase, with dashes). The client chooses the id because the registration contains it and has to be made before the request.
+2. It registers the agent (`POST /v1/agents`, with that `id`) and gets the token. In the same request it sends a **registration**: `nonce` followed by `crypto_box_easy(agentPublicKey | agentId, nonce, userPublicKey, userSecretKey)`. Only the user's key can make it, so the server cannot invent an agent key. A client on another device of the user starts from this and needs no copied pin.
 3. For each project the user names, it opens the project key and hands it to the agent (`PUT /v1/projects/{id}/members/{agentId}`), sender = the user, with a role.
-4. It writes the credentials file and tells the user where it is. Nothing else leaves the user's client.
+4. It writes the credentials file, with the name the user gave, and tells the user where it is. Nothing else leaves the user's client.
 
 For example `oloop agent add claude --project <name> --project <name> [--read-only] [--expires 90d] [--renew-until 1y | --no-renew]`.
 
@@ -77,7 +79,9 @@ A rotation changes the identity of the agent. It does **not** change the project
 
 ## Who wrote what
 
-The server records the principal of every revision (`writtenBy`) and clients show it, so a change made by an agent is recognizable as such. The `createdBy`/`updatedBy` inside the payload stay free text as in `SPEC.md`; an agent's default is its name (the CLI takes `$OLOOP_ACTOR` first, as always). A member can write any text there, so only `writtenBy` is evidence.
+The server records the principal of every revision (`writtenBy`) and clients show it, so a change made by an agent is recognizable as such. The `createdBy`/`updatedBy` inside the payload stay free text as in `SPEC.md`; an agent's default is the `name` from its credentials file. The CLI resolves the actor in this order: the option `--actor`, `$OLOOP_ACTOR`, the `name` of the credentials file, the operating-system user name (the last is what a user without a credentials file gets). A member can write any text there, so only `writtenBy` is evidence.
+
+Because that text is free, finding "my own tasks" by `createdBy` is a convenience and not proof: it is exact for an agent that keeps the default name, and wrong for one that was given another `--actor` or `$OLOOP_ACTOR`, or when another member wrote the same text. The server keeps `writtenBy` per revision, but only at least the last 10 revisions and it may drop older ones (`SERVER.md`, "History"), so the revision that created a task may be gone; a reliable "created by this principal" is therefore not available to a client today.
 
 ## Revoking
 
@@ -96,9 +100,9 @@ A process that runs as the same operating-system user can reach what that user c
 Authentication as in `SERVER.md`; the agent token is the bearer token. Errors as there.
 
 ```
-POST /v1/agents                { name, publicKey, registration,
+POST /v1/agents                { id, name, publicKey, registration,
                                  expiresAt?, renewUntil? }     (user)
-                               → { agentId, token }
+                               → { agentId, token, expiresAt }
 GET  /v1/agents                (user)
                                → [{ id, name, publicKey, registration,
                                     keyChain: [{ publicKey, statement }],
@@ -117,7 +121,8 @@ PUT  /v1/agent/keypair         (agent)
 
 Details the server enforces:
 
-- **Creating** answers `{ agentId, token, expiresAt }`. `expiresAt` defaults to 90 days from now; `renewUntil` to one year from now, or `expiresAt` when that is later. Both are at most 10 years away, `renewUntil` is not before `expiresAt`, and a time needs its zone (`Z`). `publicKey` is 32 bytes and `registration` 88 bytes (nonce, the 48 byte message and the tag), both base64url; the server checks the size and cannot check more.
+- **The id** is chosen by the client (see "Creating an agent"). It has to be a UUID (version 4, any case, answered and stored lowercase). If an agent with this id exists, whoever owns it, the answer is `409`; a client that gets it makes a new id and a new registration. The server cannot check that the id is the one inside the registration, as it cannot read it. `id` is required: a request without it answers `400`.
+- **Creating** answers `{ agentId, token, expiresAt }`; `agentId` is the `id` that was sent. `expiresAt` defaults to 90 days from now; `renewUntil` to one year from now, or `expiresAt` when that is later. Both are at most 10 years away, `renewUntil` is not before `expiresAt`, and a time needs its zone (`Z`). `publicKey` is 32 bytes and `registration` 88 bytes (nonce, the 48 byte message and the tag), both base64url; the server checks the size and cannot check more.
 - **Names** are 1 to 100 characters and unique among the agents of one user that are not revoked, compared without regard to case. A second one answers `409`. A revoked agent's name is free again.
 - **Revoking** answers `204` and can be repeated. `POST /v1/agents/{id}/token` for a revoked agent answers `409`.
 - **A new token from the user** ends the tokens of the agent at once (no grace) and starts a new renewal period of the same length as the first.
